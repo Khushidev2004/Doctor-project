@@ -7,35 +7,33 @@ export async function GET(request) {
     const phone = searchParams.get("phone");
 
     if (!phone) {
-      return NextResponse.json(
-        { found: false, message: "Phone required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ found: false });
     }
 
     const [rows] = await pool.execute(
-      `SELECT 
-        name,
+      `
+      SELECT 
         doctor,
         appointment_date,
         appointment_time,
         status
-       FROM appointments
-       WHERE phone = ?
-       ORDER BY appointment_date DESC`,
+      FROM appointments
+      WHERE phone = ?
+      ORDER BY created_at DESC
+      `,
       [phone]
     );
 
+    if (rows.length === 0) {
+      return NextResponse.json({ found: false });
+    }
+
     return NextResponse.json({
-      found: rows.length > 0,
+      found: true,
       appointments: rows,
     });
-
-  } catch (error) {
-    console.error("STATUS CHECK ERROR:", error);
-    return NextResponse.json(
-      { found: false, message: "Server error" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("STATUS ERROR:", err);
+    return NextResponse.json({ found: false }, { status: 500 });
   }
 }
