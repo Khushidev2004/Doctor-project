@@ -16,38 +16,42 @@ export default function AppointmentStatusPage() {
 
     setLoading(true);
     setNotFound(false);
+    setAppointments([]);
 
-    const res = await fetch(`/api/appointment/status?phone=${phone}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`/api/appointment/status?phone=${phone}`);
+      const data = await res.json();
 
-    if (!data.found) {
-      setNotFound(true);
-      setAppointments([]);
-    } else {
-      setAppointments(data.appointments);
+      if (!data.found) {
+        setNotFound(true);
+      } else {
+        setAppointments(data.appointments);
+      }
+    } catch (err) {
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl p-8 md:p-10 animate-fadeIn">
+      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl p-8 md:p-10">
 
-        {/* Header */}
+        {/* HEADER */}
         <div className="text-center">
           <h1 className="text-3xl md:text-4xl font-extrabold text-blue-600">
             📋 Appointment History
           </h1>
           <p className="mt-2 text-gray-500">
-            Track all your appointments using your phone number
+            Track your appointments using phone number
           </p>
         </div>
 
-        {/* Input Section */}
+        {/* INPUT */}
         <div className="mt-10 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
               📞
             </span>
             <input
@@ -72,23 +76,23 @@ export default function AppointmentStatusPage() {
           </button>
         </div>
 
-        {/* Not Found */}
+        {/* NOT FOUND */}
         {notFound && (
-          <div className="mt-8 text-center text-red-600 font-medium animate-fadeIn">
+          <div className="mt-8 text-center text-red-600 font-medium">
             ❌ No appointments found for this number
           </div>
         )}
 
-        {/* History Table */}
+        {/* TABLE */}
         {appointments.length > 0 && (
-          <div className="mt-10 overflow-x-auto animate-slideUp">
+          <div className="mt-10 overflow-x-auto">
             <table className="w-full border-collapse rounded-xl overflow-hidden">
               <thead>
                 <tr className="bg-blue-600 text-white">
-                  <th className="px-5 py-4 text-left">👩‍⚕️ Doctor</th>
-                  <th className="px-5 py-4 text-left">📅 Date</th>
-                  <th className="px-5 py-4 text-left">⏰ Time</th>
-                  <th className="px-5 py-4 text-left">📌 Status</th>
+                  <th className="px-5 py-4 text-left">Doctor</th>
+                  <th className="px-5 py-4 text-left">Date</th>
+                  <th className="px-5 py-4 text-left">Time</th>
+                  <th className="px-5 py-4 text-left">Status</th>
                 </tr>
               </thead>
 
@@ -96,32 +100,28 @@ export default function AppointmentStatusPage() {
                 {appointments.map((item, index) => (
                   <tr
                     key={index}
-                    className="border-b last:border-none
-                    hover:bg-blue-50 transition"
+                    className="border-b last:border-none hover:bg-blue-50 transition"
                   >
                     <td className="px-5 py-4 font-medium text-gray-800">
                       {item.doctor}
                     </td>
 
+                    {/* ✅ FIXED FIELD NAMES */}
                     <td className="px-5 py-4 text-gray-700">
-                      {item.date}
+                      {item.appointment_date}
                     </td>
 
                     <td className="px-5 py-4 text-gray-700">
-                      {item.time}
+                      {item.appointment_time}
                     </td>
 
                     <td className="px-5 py-4">
                       {item.status === "Approved" ? (
-                        <span className="inline-flex items-center gap-2
-                        px-4 py-1.5 rounded-full text-sm font-semibold
-                        bg-green-100 text-green-700">
+                        <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-green-100 text-green-700">
                           ✅ Approved
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-2
-                        px-4 py-1.5 rounded-full text-sm font-semibold
-                        bg-yellow-100 text-yellow-700">
+                        <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-700">
                           ⏳ Pending
                         </span>
                       )}
