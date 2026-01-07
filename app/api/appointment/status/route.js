@@ -4,17 +4,27 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const phone = searchParams.get("phone");
+    let phone = searchParams.get("phone");
 
     if (!phone) {
-      return NextResponse.json({ error: "Phone required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Phone required" },
+        { status: 400 }
+      );
     }
 
+    // ✅ IMPORTANT: clean phone (digits only)
+    phone = phone.replace(/\D/g, "");
+
     const [rows] = await pool.execute(
-      `SELECT doctor, date, time, status
+      `SELECT 
+         doctor,
+         appointment_date,
+         appointment_time,
+         status
        FROM appointments
-       WHERE phone=?
-       ORDER BY created_at DESC`,
+       WHERE phone = ?
+       ORDER BY id DESC`,
       [phone]
     );
 
@@ -28,6 +38,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
+    console.error("STATUS API ERROR:", error);
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
