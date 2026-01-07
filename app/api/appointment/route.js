@@ -1,8 +1,12 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
-import { sendAdminEmail, sendUserEmail, sendApprovalEmail } from "@/lib/email";
+import {
+  sendAdminEmail,
+  sendUserEmail,
+  sendApprovalEmail,
+} from "@/lib/email";
 
-/* ========= POST ========= */
+/* ================= POST ================= */
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -10,8 +14,8 @@ export async function POST(req) {
 
     await pool.execute(
       `INSERT INTO appointments
-       (name, email, phone, doctor, appointment_date, appointment_time, message, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')`,
+      (name, email, phone, doctor, appointment_date, appointment_time, message, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')`,
       [name, email, phone, doctor, date, time, message]
     );
 
@@ -21,47 +25,73 @@ export async function POST(req) {
     return NextResponse.json({ message: "Appointment booked" });
   } catch (err) {
     console.error("POST Appointment Error:", err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Server error" },
+      { status: 500 }
+    );
   }
 }
 
-/* ========= GET ========= */
+/* ================= GET ================= */
 export async function GET() {
   try {
     const [rows] = await pool.execute(
       "SELECT * FROM appointments ORDER BY id DESC"
     );
     return NextResponse.json(rows);
-  } catch {
-    return NextResponse.json({ message: "DB Error" }, { status: 500 });
+  } catch (err) {
+    console.error("GET Appointment Error:", err);
+    return NextResponse.json(
+      { message: "DB Error" },
+      { status: 500 }
+    );
   }
 }
 
-/* ========= PUT (Approve) ========= */
+/* ================= PUT (Approve) ================= */
 export async function PUT(req) {
-  const { id } = await req.json();
+  try {
+    const { id } = await req.json();
 
-  const [rows] = await pool.execute(
-    "SELECT * FROM appointments WHERE id=?",
-    [id]
-  );
+    const [rows] = await pool.execute(
+      "SELECT * FROM appointments WHERE id=?",
+      [id]
+    );
 
-  if (!rows.length)
-    return NextResponse.json({ message: "Not found" }, { status: 404 });
+    if (!rows.length) {
+      return NextResponse.json(
+        { message: "Appointment not found" },
+        { status: 404 }
+      );
+    }
 
-  await pool.execute(
-    "UPDATE appointments SET status='Approved' WHERE id=?",
-    [id]
-  );
+    await pool.execute(
+      "UPDATE appointments SET status='Approved' WHERE id=?",
+      [id]
+    );
 
-  await sendApprovalEmail(rows[0]);
+    await sendApprovalEmail(rows[0]);
 
-  return NextResponse.json({ message: "Approved" });
+    return NextResponse.json({ message: "Approved" });
+  } catch (err) {
+    console.error("PUT Error:", err);
+    return NextResponse.json(
+      { message: "Server error" },
+      { status: 500 }
+    );
+  }
 }
 
-/* ========= DELETE ========= */
+/* ================= DELETE ================= */
 export async function DELETE(req) {
-  const { id } = await req.json();
-  await pool.execute("DELETE FROM appointments WHERE id=?", [id]);
-  return NextResponse.json({ message: "Deleted" });
+  try {
+    const { id } = await req.json();
+    await pool.execute("DELETE FROM appointments WHERE id=?", [id]);
+    return NextResponse.json({ message: "Deleted" });
+  } catch (err) {
+    return NextResponse.json(
+      { message: "DB Error" },
+      { status: 500 }
+    );
+  }
 }
