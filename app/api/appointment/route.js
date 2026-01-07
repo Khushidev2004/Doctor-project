@@ -8,60 +8,62 @@ import {
 
 /* ======================
    POST: Save Appointment
-   - Save DB
-   - Email Admin
-   - Email User (Received)
 ====================== */
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    const {
-      name,
-      email,
-      phone,
-      doctor,
-      date,
-      time,
-      message,
-    } = body;
+    const { name, email, phone, doctor, date, time, message } = body;
 
-    // 1️⃣ Save to Database
+    // 🔴 1️⃣ Basic Validation
+    if (!name || !email || !phone || !doctor || !date || !time) {
+      return NextResponse.json(
+        { message: "All required fields are mandatory" },
+        { status: 400 }
+      );
+    }
+
+    // 🔴 2️⃣ Save to Database (MOST IMPORTANT)
     await pool.execute(
       `INSERT INTO appointments
        (name, email, phone, doctor, date, time, message)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, doctor, date, time, message]
+      [name, email, phone, doctor, date, time, message || ""]
     );
 
-    // 2️⃣ Email Admin
-    await sendAdminEmail({
-      name,
-      email,
-      phone,
-      doctor,
-      date,
-      time,
-      message,
-    });
+    // 🟡 3️⃣ Emails (NON-BLOCKING)
+    try {
+      await sendAdminEmail({
+        name,
+        email,
+        phone,
+        doctor,
+        date,
+        time,
+        message,
+      });
 
-    // 3️⃣ Email User (confirmation)
-    await sendUserEmail({
-      name,
-      email,
-      doctor,
-      date,
-      time,
-    });
+      await sendUserEmail({
+        name,
+        email,
+        doctor,
+        date,
+        time,
+      });
+    } catch (emailError) {
+      console.error("EMAIL ERROR (ignored):", emailError);
+      // ⛔ Email fail hone par bhi appointment SAVE rahegi
+    }
 
     return NextResponse.json(
-      { message: "Appointment saved & emails sent" },
+      { message: "Appointment booked successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("POST Appointment Error:", error);
+    console.error("POST Appointment Error FULL:", error);
+
     return NextResponse.json(
-      { message: "Server error" },
+      { message: error.message || "Server error" },
       { status: 500 }
     );
   }
@@ -77,6 +79,7 @@ export async function GET() {
     );
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
+    console.error("GET Error:", error);
     return NextResponse.json(
       { message: "DB Error" },
       { status: 500 }
@@ -86,14 +89,18 @@ export async function GET() {
 
 /* ======================
    PUT: Approve Appointment
-   - Update status
-   - Email User (Approved)
 ====================== */
 export async function PUT(request) {
   try {
     const { id } = await request.json();
 
-    // 1️⃣ Get appointment details
+    if (!id) {
+      return NextResponse.json(
+        { message: "ID required" },
+        { status: 400 }
+      );
+    }
+
     const [rows] = await pool.execute(
       "SELECT * FROM appointments WHERE id=?",
       [id]
@@ -108,27 +115,29 @@ export async function PUT(request) {
 
     const appointment = rows[0];
 
-    // 2️⃣ Update status
     await pool.execute(
       "UPDATE appointments SET status='Approved' WHERE id=?",
       [id]
     );
 
-    // 3️⃣ Email User (approval notification)
-    await sendApprovalEmail({
-      name: appointment.name,
-      email: appointment.email,
-      doctor: appointment.doctor,
-      date: appointment.date,
-      time: appointment.time,
-    });
+    try {
+      await sendApprovalEmail({
+        name: appointment.name,
+        email: appointment.email,
+        doctor: appointment.doctor,
+        date: appointment.date,
+        time: appointment.time,
+      });
+    } catch (emailError) {
+      console.error("Approval email failed:", emailError);
+    }
 
     return NextResponse.json(
-      { message: "Appointment approved & email sent" },
+      { message: "Appointment approved" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("PUT Approve Error:", error);
+    console.error("PUT Error:", error);
     return NextResponse.json(
       { message: "Server error" },
       { status: 500 }
@@ -143,16 +152,24 @@ export async function DELETE(request) {
   try {
     const { id } = await request.json();
 
+    if (!id) {
+      return NextResponse.json(
+        { message: "ID required" },
+        { status: 400 }
+      );
+    }
+
     await pool.execute(
       "DELETE FROM appointments WHERE id=?",
       [id]
     );
 
     return NextResponse.json(
-      { message: "Deleted" },
+      { message: "Deleted successfully" },
       { status: 200 }
     );
   } catch (error) {
+    console.error("DELETE Error:", error);
     return NextResponse.json(
       { message: "DB Error" },
       { status: 500 }
