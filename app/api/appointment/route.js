@@ -9,31 +9,27 @@ import {
 /* ======================
    POST: Save Appointment
 ====================== */
+
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    const { name, email, phone, doctor, date, time, message } = body;
+    const {
+      name,
+      email,
+      phone,
+      doctor,
+      date,
+      time,
+      message,
+    } = body;
 
-    // 🔴 1️⃣ Basic Validation
-    if (!name || !email || !phone || !doctor || !date || !time) {
-      return NextResponse.json(
-        { message: "All required fields are mandatory" },
-        { status: 400 }
-      );
-    }
-
-    // 🔴 2️⃣ Save to Database (MOST IMPORTANT)
+    // ✅ DB INSERT (MATCHING TABLE COLUMNS)
     await pool.execute(
       `INSERT INTO appointments
-       (name, email, phone, doctor, date, time, message)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, phone, doctor, date, time, message || ""]
-    );
-
-    // 🟡 3️⃣ Emails (NON-BLOCKING)
-    try {
-      await sendAdminEmail({
+       (name, email, phone, doctor, appointment_date, appointment_time, message, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
         name,
         email,
         phone,
@@ -41,19 +37,13 @@ export async function POST(request) {
         date,
         time,
         message,
-      });
+        "Pending",
+      ]
+    );
 
-      await sendUserEmail({
-        name,
-        email,
-        doctor,
-        date,
-        time,
-      });
-    } catch (emailError) {
-      console.error("EMAIL ERROR (ignored):", emailError);
-      // ⛔ Email fail hone par bhi appointment SAVE rahegi
-    }
+    // ✅ Emails
+    await sendAdminEmail({ name, email, phone, doctor, date, time, message });
+    await sendUserEmail({ name, email, doctor, date, time });
 
     return NextResponse.json(
       { message: "Appointment booked successfully" },
@@ -61,27 +51,8 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error("POST Appointment Error FULL:", error);
-
     return NextResponse.json(
-      { message: error.message || "Server error" },
-      { status: 500 }
-    );
-  }
-}
-
-/* ======================
-   GET: Fetch Appointments
-====================== */
-export async function GET() {
-  try {
-    const [rows] = await pool.execute(
-      "SELECT * FROM appointments ORDER BY created_at DESC"
-    );
-    return NextResponse.json(rows, { status: 200 });
-  } catch (error) {
-    console.error("GET Error:", error);
-    return NextResponse.json(
-      { message: "DB Error" },
+      { message: "Server error" },
       { status: 500 }
     );
   }
