@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Mail, Phone, User, CheckCircle, Trash2, AlertCircle } from "lucide-react";
 
 export default function AdminAppointments() {
   const [data, setData] = useState([]);
@@ -13,7 +12,9 @@ export default function AdminAppointments() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const approve = async (id) => {
     await fetch("/api/appointment", {
@@ -33,148 +34,85 @@ export default function AdminAppointments() {
     load();
   };
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading appointments...</p>
-        </div>
+      <div className="flex justify-center items-center h-[60vh]">
+        <p className="text-lg font-semibold text-gray-600 animate-pulse">
+          Loading appointments...
+        </p>
       </div>
     );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Appointment Management</h1>
-          <p className="text-gray-600">Manage and review patient appointments</p>
-          <div className="mt-4 flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-              <span className="text-gray-600">Pending: {data.filter(a => a.status === "Pending").length}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-gray-600">Approved: {data.filter(a => a.status === "Approved").length}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-              <span className="text-gray-600">Total: {data.length}</span>
-            </div>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          Admin Appointments Panel
+        </h1>
 
-        {/* Appointments Grid */}
-        {data.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No appointments found</h3>
-            <p className="text-gray-500">There are currently no appointments to display.</p>
-          </div>
-        ) : (
-          <div className="grid gap-5">
-            {data.map(a => (
-              <div 
-                key={a.id} 
-                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200"
-              >
-                <div className="p-6">
-                  {/* Header with Status */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <User className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{a.name}</h3>
-                        <p className="text-sm text-gray-500">Patient ID: #{a.id}</p>
-                      </div>
-                    </div>
-                    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
-                      a.status === "Pending" 
-                        ? "bg-yellow-100 text-yellow-800" 
-                        : "bg-green-100 text-green-800"
-                    }`}>
-                      {a.status}
-                    </span>
-                  </div>
-
-                  {/* Contact Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                        <Mail className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs text-gray-500 mb-0.5">Email</p>
-                        <p className="font-medium truncate">{a.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                        <Phone className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-0.5">Phone</p>
-                        <p className="font-medium">{a.phone}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Appointment Details */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center gap-3">
-                        <User className="w-5 h-5 text-purple-600" />
-                        <div>
-                          <p className="text-xs text-gray-600 mb-0.5">Doctor</p>
-                          <p className="font-semibold text-gray-900">{a.doctor}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="text-xs text-gray-600 mb-0.5">Date</p>
-                          <p className="font-semibold text-gray-900">{a.appointment_date}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className="text-xs text-gray-600 mb-0.5">Time</p>
-                          <p className="font-semibold text-gray-900">{a.appointment_time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    {a.status === "Pending" && (
-                      <button 
-                        onClick={() => approve(a.id)}
-                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow"
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                        Approve Appointment
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => del(a.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {data.length === 0 && (
+          <p className="text-center text-gray-500">
+            No appointments found
+          </p>
         )}
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {data.map((a) => (
+            <div
+              key={a.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {a.name}
+                </h2>
+
+                <span
+                  className={`px-3 py-1 text-sm rounded-full font-medium
+                    ${
+                      a.status === "Pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
+                    }
+                  `}
+                >
+                  {a.status}
+                </span>
+              </div>
+
+              {/* Details */}
+              <div className="space-y-1 text-gray-600 text-sm">
+                <p><b>Email:</b> {a.email}</p>
+                <p><b>Phone:</b> {a.phone}</p>
+                <p><b>Doctor:</b> {a.doctor}</p>
+                <p>
+                  <b>Date:</b> {a.appointment_date} <br />
+                  <b>Time:</b> {a.appointment_time}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-5">
+                {a.status === "Pending" && (
+                  <button
+                    onClick={() => approve(a.id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition"
+                  >
+                    Approve
+                  </button>
+                )}
+
+                <button
+                  onClick={() => del(a.id)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
