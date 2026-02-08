@@ -1,4 +1,5 @@
- export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import mysql from "mysql2/promise";
@@ -12,8 +13,7 @@ function getPool() {
       user: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
+      port: process.env.DB_PORT,
     });
   }
   return pool;
@@ -42,8 +42,8 @@ export async function GET(request) {
       found: rows.length > 0,
       appointments: rows,
     });
-  } catch (error) {
-    console.error("API ERROR:", error);
+  } catch (err) {
+    console.error("API ERROR:", err);
     return NextResponse.json({ found: false }, { status: 500 });
   }
 }
