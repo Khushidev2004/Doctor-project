@@ -1,5 +1,21 @@
-import pool from "@/lib/db";
 import { NextResponse } from "next/server";
+import mysql from "mysql2/promise";
+
+let pool;
+
+function getPool() {
+  if (!pool) {
+    pool = mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+    });
+  }
+  return pool;
+}
 
 export async function GET(request) {
   try {
@@ -10,30 +26,22 @@ export async function GET(request) {
       return NextResponse.json({ found: false });
     }
 
-    const [rows] = await pool.execute(
-      `
-      SELECT 
-        doctor,
-        appointment_date,
-        appointment_time,
-        status
-      FROM appointments
-      WHERE phone = ?
-      ORDER BY created_at DESC
-      `,
+    const db = getPool();
+
+    const [rows] = await db.execute(
+      `SELECT doctor, appointment_date, appointment_time, status
+       FROM appointments
+       WHERE phone = ?
+       ORDER BY created_at DESC`,
       [phone]
     );
 
-    if (rows.length === 0) {
-      return NextResponse.json({ found: false });
-    }
-
     return NextResponse.json({
-      found: true,
+      found: rows.length > 0,
       appointments: rows,
     });
-  } catch (err) {
-    console.error("STATUS ERROR:", err);
+  } catch (error) {
+    console.error("API ERROR:", error);
     return NextResponse.json({ found: false }, { status: 500 });
   }
 }
