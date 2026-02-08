@@ -2,12 +2,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
 
 let pool;
 
-function getPool() {
+async function getPool() {
   if (!pool) {
+    const mysql = (await import("mysql2/promise")).default;
+
     pool = mysql.createPool({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -28,7 +29,7 @@ export async function GET(request) {
       return NextResponse.json({ found: false });
     }
 
-    const db = getPool();
+    const db = await getPool();
 
     const [rows] = await db.execute(
       `SELECT doctor, appointment_date, appointment_time, status
