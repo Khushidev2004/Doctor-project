@@ -160,7 +160,7 @@ export default function Home() {
             {/* Content */}
             <div>
               <h2 className="text-3xl font-bold text-gray-900">
-                About <span className="text-blue-600">Khushi Clinic</span>
+                About <span className="text-blue-600">appointment Clinic</span>
               </h2>
 
               <p className="mt-4 text-gray-600 leading-relaxed">
