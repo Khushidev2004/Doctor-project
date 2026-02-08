@@ -24,7 +24,7 @@ export default function Home() {
           Caring for Your <br />
           Health at{" "}
           <span className="font-bold text-white">
-            Khushi Clinic
+            appointment Clinic
           </span>
         </h1>
 
@@ -164,7 +164,7 @@ export default function Home() {
               </h2>
 
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Khushi Clinic is dedicated to providing high-quality and
+              appointment Clinic is dedicated to providing high-quality and
                 compassionate healthcare. Our experienced doctors and friendly
                 staff focus on patient comfort, accurate diagnosis, and
                 effective treatment.
@@ -197,7 +197,7 @@ export default function Home() {
         Our <span className="text-blue-600">Medical Services</span>
       </h2>
       <p className="mt-4 max-w-2xl mx-auto text-gray-600 text-lg">
-        At Khushi Clinic, we provide trusted and compassionate healthcare
+        At appointment Clinic, we provide trusted and compassionate healthcare
         services designed to meet your medical needs.
       </p>
     </div>
@@ -303,7 +303,7 @@ export default function Home() {
         What Our <span className="text-blue-600">Patients Say</span>
       </h2>
       <p className="mt-5 text-gray-600 text-lg max-w-2xl mx-auto">
-        Real stories from patients who trusted Khushi Clinic for
+        Real stories from patients who trusted appointment Clinic for
         their healthcare needs.
       </p>
     </div>
@@ -315,7 +315,7 @@ export default function Home() {
       <div className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-2xl transition duration-300">
         <div className="text-5xl text-blue-600 mb-6">“</div>
         <p className="text-gray-600 leading-relaxed text-base">
-          Doctors at Khushi Clinic are very kind and professional.
+          Doctors at appointment Clinic are very kind and professional.
           The treatment quality and care exceeded my expectations.
         </p>
 

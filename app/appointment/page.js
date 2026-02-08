@@ -44,8 +44,7 @@ export default function AppointmentPage() {
         message: "",
       });
     } catch {
-      setLoading(false);
-      alert("Network error");
+      alert("Server is waking up, please try again in a few moments.");
     }
   };
 
